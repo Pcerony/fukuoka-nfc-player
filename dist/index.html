@@ -11,9 +11,43 @@
 <body>
   <main class="player" aria-label="NFCプレーヤー" data-state="off">
     <div class="deck" aria-hidden="true">
-      <img class="map" src="./white-city.jpg" alt="" fetchpriority="high">
-      <div class="arm"><i></i></div>
+      <svg class="map" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <radialGradient id="roof">
+            <stop offset=".65" stop-color="#fff"/>
+            <stop offset=".93" stop-color="#ebebe9"/>
+            <stop offset="1" stop-color="#ccc"/>
+          </radialGradient>
+          <linearGradient id="needle">
+            <stop stop-color="#c6c6c3"/><stop offset=".38" stop-color="#fff"/>
+            <stop offset=".63" stop-color="#fafaf9"/><stop offset="1" stop-color="#d0d0ce"/>
+          </linearGradient>
+          <filter id="shadow" x="-35%" y="-35%" width="180%" height="180%">
+            <feDropShadow dx="3" dy="6" stdDeviation="4" flood-color="#333" flood-opacity=".32"/>
+          </filter>
+        </defs>
+        <image href="./dome-map.svg" width="1000" height="1000"/>
+        <circle cx="500" cy="500" r="89" fill="url(#roof)" stroke="#fff" stroke-width="2" filter="url(#shadow)"/>
+        <g class="record" fill="none" stroke="#bfbfbd" stroke-width="1">
+          <circle cx="500" cy="500" r="80"/>
+          <circle cx="500" cy="500" r="75"/>
+          <circle cx="500" cy="500" r="69"/>
+          <circle cx="500" cy="500" r="62"/>
+          <circle cx="500" cy="500" r="55"/>
+          <circle cx="500" cy="500" r="30" fill="#f7f7f6"/>
+          <path d="M482 495h36m-27 7h18" stroke="#777"/>
+          <circle cx="500" cy="510" r="2" fill="#777"/>
+          <path d="M528 429a76 76 0 0 1 28 19" stroke="#fff" stroke-width="3"/>
+        </g>
+        <g transform="translate(-30 0)"><g class="arm" filter="url(#shadow)">
+          <circle cx="665" cy="317" r="22" fill="url(#needle)" stroke="#fff" stroke-width="2"/>
+          <rect x="660" y="326" width="10" height="202" rx="5" fill="url(#needle)"/>
+          <rect x="656" y="523" width="18" height="24" rx="4" fill="url(#needle)" stroke="#fff"/>
+          <path d="M660 543h10" stroke="#777" stroke-width="2"/>
+        </g></g>
+      </svg>
     </div>
+    <a class="attribution" href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a>
     <div class="controls">
       <button type="button">
         <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
