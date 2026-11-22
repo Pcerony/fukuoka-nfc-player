@@ -47,6 +47,17 @@ button { display: inline-flex; align-items: center; justify-content: center; gap
 button[hidden], p:empty { display: none; }
 button:focus-visible { outline: 2px solid #414440; outline-offset: 4px; }
 button:disabled { cursor: wait; }
+.fullscreen {
+  position: absolute;
+  top: max(.75rem, env(safe-area-inset-top));
+  right: max(.75rem, env(safe-area-inset-right));
+  width: 2.75rem;
+  height: 2.75rem;
+  min-height: 0;
+  padding: 0;
+}
+.fullscreen[aria-pressed="true"] .expand,
+.fullscreen[aria-pressed="false"] .collapse { display: none; }
 p { font-size: .9375rem; }
 button:not([hidden]) ~ p:not(:empty) { grid-area: 2/1; margin-top: .75rem; }
 @media (prefers-reduced-motion: reduce) { .arm { transition: none; } .record { animation: none; } }
