@@ -10,41 +10,13 @@ body { margin: 0; }
 
 .player { position: relative; min-height: 100svh; isolation: isolate; display: grid; align-items: end; justify-items: center; }
 .deck { position: absolute; inset: 0; overflow: hidden; z-index: -1; }
-.map { width: 100%; height: 100%; object-fit: cover; object-position: 50% 52%; position: absolute; inset: 0; }
-
-.arm {
-  position: absolute;
-  top: max(7%, env(safe-area-inset-top));
-  right: 12%;
-  width: clamp(2.1rem, 7vw, 3.5rem);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  border: 2px solid #fff;
-  background: linear-gradient(145deg, #fff 25%, #eee 90%);
-  box-shadow: 4px 8px 18px #272b2a43, inset -1px -3px 3px #b9bbba77;
-  transform: rotate(12deg);
-  transition: transform .55s cubic-bezier(.2,.7,.3,1);
-}
-.arm i {
-  position: absolute;
-  top: 58%;
-  left: calc(50% - .26rem);
-  width: .52rem;
-  height: clamp(7rem, 27dvh, 16rem);
-  border-radius: 1rem;
-  background: linear-gradient(90deg, #e0e1df, #fff 43%, #f9f9f8 68%, #c0c3c1);
-  box-shadow: 5px 9px 11px #282b2a48;
-}
-.arm i::after {
-  content: "";
-  position: absolute;
-  inset: auto -.34rem -1px;
-  height: 1.65rem;
-  border-radius: 4px 4px 3px 3px;
-  background: linear-gradient(145deg, #fff 40%, #d8d9d6);
-  box-shadow: 3px 6px 7px #262b2940, inset 0 1px #fff;
-}
-.player[data-state="playing"] .arm { transform: rotate(46deg); }
+.map { position: absolute; inset: 0; width: 100%; height: 100%; }
+.arm { transform-origin: 665px 317px; transition: transform .55s cubic-bezier(.2,.7,.3,1); }
+.player[data-state="playing"] .arm { transform: rotate(27deg); }
+.record { transform-origin: 500px 500px; animation: spin 4s linear infinite paused; }
+.player[data-state="playing"] .record { animation-play-state: running; }
+@keyframes spin { to { transform: rotate(1turn); } }
+.attribution { position: absolute; right: .35rem; bottom: .25rem; padding: .15rem .3rem; font-size: .7rem; color: #454545; background: #fffd; }
 
 .controls {
   width: min(calc(100% - 2rem), 28rem);
@@ -71,4 +43,4 @@ button:focus-visible { outline: 2px solid #414440; outline-offset: 4px; }
 button:disabled { cursor: wait; }
 p { font-size: .9375rem; }
 button:not([hidden]) ~ p:not(:empty) { grid-area: 2/1; margin-top: .75rem; }
-@media (prefers-reduced-motion: reduce) { .arm { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .arm { transition: none; } .record { animation: none; } }
