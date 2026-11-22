@@ -2,8 +2,26 @@ import { matchesTag, makePlayer } from './player.mjs';
 import { list, loadBytes } from './cloud.mjs';
 
 const deck = document.querySelector('.player');
-const button = document.querySelector('button');
+const button = document.querySelector('.controls button');
 const status = document.querySelector('[role="status"]');
+const fullscreen = document.querySelector('.fullscreen');
+
+if (document.fullscreenEnabled) {
+  fullscreen.hidden = false;
+  document.addEventListener('fullscreenchange', () => {
+    const expanded = Boolean(document.fullscreenElement);
+    fullscreen.setAttribute('aria-pressed', String(expanded));
+    fullscreen.title = expanded ? '全画面を終了' : '全画面';
+  });
+  fullscreen.addEventListener('click', async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await document.documentElement.requestFullscreen();
+    } catch {
+      fullscreen.title = '全画面に切り替えられませんでした';
+    }
+  });
+}
 const labels = {
   ready: 'カードをかざす', loading: '読み込み中', playing: '再生中',
   empty: '再生できる録音がありません', error: '再生できませんでした。もう一度かざしてください。',
