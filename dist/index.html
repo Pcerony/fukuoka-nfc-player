@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f4f4f2">
   <title>NFC Player</title>
-  <link rel="stylesheet" href="./style.css?v=20261123-1">
-  <script type="module" src="./main.mjs?v=20261123-1"></script>
+  <link rel="stylesheet" href="./style.css?v=20261123-2">
+  <script type="module" src="./main.mjs?v=20261123-2"></script>
 </head>
 <body>
   <main class="player" aria-label="NFCプレーヤー" data-state="off">
@@ -44,8 +44,8 @@
             <feDropShadow dx="3" dy="6" stdDeviation="4" flood-color="#333" flood-opacity=".32"/>
           </filter>
         </defs>
-        <image href="./dome-map.svg?v=20261123-1" width="1000" height="1000"/>
-        <g class="turntable">
+        <g class="scene">
+        <image href="./dome-map.svg?v=20261123-2" width="1000" height="1000"/>
         <circle cx="500" cy="500" r="89" fill="url(#roof)" stroke="#fff" stroke-width="2" filter="url(#shadow)"/>
         <g class="record" fill="none" stroke="#bfbfbd" stroke-width="1">
           <circle cx="500" cy="500" r="81" fill="url(#vinyl)" stroke="#121214" stroke-width="2"/>
@@ -66,8 +66,7 @@
           <path d="M485 488h30m-22 4h14m-11 21h8" stroke="#392524" stroke-width="1.3"/>
           <circle cx="500" cy="500" r="2.5" fill="#232325" stroke="#a54e30" stroke-width=".8"/>
         </g>
-        </g>
-        <g transform="translate(-30 0)"><g class="arm" filter="url(#shadow)">
+        <g transform="translate(-65 0)"><g class="arm" filter="url(#shadow)">
           <circle cx="665" cy="317" r="23" fill="url(#needle)" stroke="#aaa" stroke-width=".7"/>
           <circle cx="665" cy="316" r="20" fill="url(#cartridge)" stroke="#acadb0" stroke-width="1"/>
           <rect x="657" y="316" width="16" height="31" rx="7" fill="url(#needle)" stroke="#55575b" stroke-width=".7"/>
@@ -77,6 +76,7 @@
           <path d="M658 526h14m-11 16h8" stroke="#88898b" stroke-width="1"/>
           <path d="M663 545h4l-2 5z" fill="url(#needle)"/>
         </g></g>
+        </g>
       </svg>
     </div>
     <a class="attribution" href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a>
