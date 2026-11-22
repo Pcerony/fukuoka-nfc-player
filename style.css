@@ -1,0 +1,25 @@
+:root { color-scheme: light; font-family: system-ui, sans-serif; color: #202720; background: #e9ebdf; }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100svh; display: grid; place-items: center; }
+.player { width: min(100%, 37rem); padding: 1.5rem clamp(1rem, 5%, 2.5rem); }
+header { text-align: center; margin-bottom: 1.35rem; }
+h1 { margin: 0; font-size: 2rem; font-weight: 750; }
+.deck { aspect-ratio: 1.12; position: relative; display: grid; align-items: center; background: #2d443a; border: 1px solid #20362c; border-radius: 8px; box-shadow: 0 7px 0 #1b2b24, 0 14px 22px #141b192e; }
+.platter { width: 74%; margin-left: 5%; aspect-ratio: 1; border-radius: 50%; padding: 1.65%; background: #8c958b; box-shadow: 0 6px 9px #0007; }
+.record { width: 100%; height: 100%; border-radius: 50%; display: grid; place-items: center; background: repeating-radial-gradient(circle, #171a18 0 2px, #292d29 3px, #171a18 4px); position: relative; isolation: isolate; animation: spin 4s linear infinite paused; }
+.record::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: conic-gradient(transparent 0%, #e9ebdf2a 13%, transparent 23% 49%, #f4ede238 63%, transparent 74%); z-index: -1; }
+.record img { width: 37%; }
+.arm { position: absolute; top: 14%; left: 85%; width: 9%; aspect-ratio: 1; border-radius: 50%; background: #a9ada0; border: 4px solid #172820; box-shadow: 1px 3px 4px #0008; transform: rotate(10deg); transition: transform .35s; }
+.arm i { position: absolute; top: 50%; left: 42%; height: clamp(4.5rem, 26vw, 9.5rem); width: 18%; border-radius: 6px; background: #bfc4b8; box-shadow: 2px 2px 2px #0008; }
+.arm i::after { content: ""; position: absolute; bottom: 0; left: -65%; width: 230%; height: 15%; border-radius: 2px; background: #171d19; border-bottom: 3px solid #f28565; }
+.player[data-state="playing"] .arm { transform: rotate(32deg); }
+.player[data-state="playing"] .record { animation-play-state: running; }
+.controls { margin-top: 1.65rem; min-height: 3rem; display: grid; place-items: center; text-align: center; }
+button { grid-area: 1/1; display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-height: 3rem; padding: .65rem 1rem; border: 0; border-radius: 6px; background: #234439; color: white; font: inherit; font-weight: 650; cursor: pointer; }
+button[hidden] { display: none; }
+button:focus-visible { outline: 3px solid #234439; outline-offset: 4px; }
+button:disabled { opacity: .72; cursor: wait; }
+p { margin: 0; }
+p:empty { display: none; }
+@keyframes spin { to { transform: rotate(1turn); } }
+@media (prefers-reduced-motion: reduce) { .record { animation: none; } .arm { transition: none; } }

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#e9ebdf">
+  <title>福岡の声</title>
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./main.mjs"></script>
+</head>
+<body>
+  <main class="player" data-state="off">
+    <header><h1>福岡の声</h1></header>
+    <div class="deck" aria-hidden="true">
+      <div class="platter">
+        <div class="record"><img src="./label.svg" alt=""></div>
+      </div>
+      <div class="arm"><i></i></div>
+    </div>
+    <div class="controls">
+      <button type="button">
+        <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+          <path d="M5 9a4 4 0 0 1 0 6m4-9a8 8 0 0 1 0 12m4-15a12 12 0 0 1 0 18"/>
+        </svg>
+        NFCを有効にする
+      </button>
+      <p role="status"></p>
+    </div>
+  </main>
+</body>
+</html>
