@@ -14,13 +14,24 @@
       <svg class="map" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice">
         <defs>
           <radialGradient id="roof">
-            <stop offset=".65" stop-color="#fff"/>
-            <stop offset=".93" stop-color="#ebebe9"/>
-            <stop offset="1" stop-color="#ccc"/>
+            <stop offset=".65" stop-color="#fafafa"/>
+            <stop offset=".89" stop-color="#e8e8e6"/>
+            <stop offset=".96" stop-color="#fcfcfb"/>
+            <stop offset="1" stop-color="#b8b8b5"/>
           </radialGradient>
+          <linearGradient id="vinyl" x2=".85" y2="1">
+            <stop stop-color="#fbfbfa"/><stop offset=".3" stop-color="#d9d9d7"/>
+            <stop offset=".49" stop-color="#f9f9f8"/><stop offset=".69" stop-color="#e1e1df"/>
+            <stop offset="1" stop-color="#f6f6f5"/>
+          </linearGradient>
           <linearGradient id="needle">
-            <stop stop-color="#c6c6c3"/><stop offset=".38" stop-color="#fff"/>
-            <stop offset=".63" stop-color="#fafaf9"/><stop offset="1" stop-color="#d0d0ce"/>
+            <stop stop-color="#aaa9a7"/><stop offset=".15" stop-color="#e2e2df"/>
+            <stop offset=".36" stop-color="#fff"/><stop offset=".68" stop-color="#f5f5f3"/>
+            <stop offset=".88" stop-color="#d7d7d4"/><stop offset="1" stop-color="#a8a8a5"/>
+          </linearGradient>
+          <linearGradient id="cartridge" x2=".7" y2="1">
+            <stop stop-color="#fff"/><stop offset=".55" stop-color="#f1f1ef"/>
+            <stop offset=".56" stop-color="#dddedb"/><stop offset="1" stop-color="#b4b4b0"/>
           </linearGradient>
           <filter id="shadow" x="-35%" y="-35%" width="180%" height="180%">
             <feDropShadow dx="3" dy="6" stdDeviation="4" flood-color="#333" flood-opacity=".32"/>
@@ -29,21 +40,32 @@
         <image href="./dome-map.svg" width="1000" height="1000"/>
         <circle cx="500" cy="500" r="89" fill="url(#roof)" stroke="#fff" stroke-width="2" filter="url(#shadow)"/>
         <g class="record" fill="none" stroke="#bfbfbd" stroke-width="1">
-          <circle cx="500" cy="500" r="80"/>
-          <circle cx="500" cy="500" r="75"/>
-          <circle cx="500" cy="500" r="69"/>
-          <circle cx="500" cy="500" r="62"/>
-          <circle cx="500" cy="500" r="55"/>
+          <circle cx="500" cy="500" r="81" fill="url(#vinyl)" stroke="#ababaa"/>
+          <circle cx="500" cy="500" r="79" stroke="#fff"/>
+          <g stroke="#8b8b87" stroke-opacity=".44" stroke-width=".46">
+            <circle cx="500" cy="500" r="76"/><circle cx="500" cy="500" r="74"/>
+            <circle cx="500" cy="500" r="71"/><circle cx="500" cy="500" r="69"/>
+            <circle cx="500" cy="500" r="67"/><circle cx="500" cy="500" r="64"/>
+            <circle cx="500" cy="500" r="62"/><circle cx="500" cy="500" r="59"/>
+            <circle cx="500" cy="500" r="56"/><circle cx="500" cy="500" r="54"/>
+            <circle cx="500" cy="500" r="51"/><circle cx="500" cy="500" r="48"/>
+            <circle cx="500" cy="500" r="45"/><circle cx="500" cy="500" r="42"/>
+            <circle cx="500" cy="500" r="39"/><circle cx="500" cy="500" r="36"/>
+          </g>
           <circle cx="500" cy="500" r="30" fill="#f7f7f6"/>
           <path d="M482 495h36m-27 7h18" stroke="#777"/>
           <circle cx="500" cy="510" r="2" fill="#777"/>
           <path d="M528 429a76 76 0 0 1 28 19" stroke="#fff" stroke-width="3"/>
         </g>
         <g transform="translate(-30 0)"><g class="arm" filter="url(#shadow)">
-          <circle cx="665" cy="317" r="22" fill="url(#needle)" stroke="#fff" stroke-width="2"/>
-          <rect x="660" y="326" width="10" height="202" rx="5" fill="url(#needle)"/>
-          <rect x="656" y="523" width="18" height="24" rx="4" fill="url(#needle)" stroke="#fff"/>
-          <path d="M660 543h10" stroke="#777" stroke-width="2"/>
+          <circle cx="665" cy="317" r="23" fill="url(#needle)" stroke="#aaa" stroke-width=".7"/>
+          <circle cx="665" cy="316" r="20" fill="url(#cartridge)" stroke="#fff" stroke-width="1.5"/>
+          <rect x="657" y="316" width="16" height="31" rx="7" fill="url(#needle)" stroke="#aaa" stroke-width=".7"/>
+          <rect x="660" y="337" width="10" height="190" rx="5" fill="url(#needle)" stroke="#b9b9b6" stroke-width=".7"/>
+          <rect x="658" y="514" width="14" height="12" rx="3" fill="url(#needle)" stroke="#b5b5b2" stroke-width=".7"/>
+          <path d="M657 522h16l3 7-2 16h-18l-2-16z" fill="url(#cartridge)" stroke="#adada9" stroke-width=".75"/>
+          <path d="M658 526h14m-11 16h8" stroke="#fff" stroke-width="1"/>
+          <path d="M663 546h4l-2 4z" fill="#777775"/>
         </g></g>
       </svg>
     </div>
