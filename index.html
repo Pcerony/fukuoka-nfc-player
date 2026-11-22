@@ -3,18 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#e9ebdf">
-  <title>福岡の声</title>
+  <meta name="theme-color" content="#f4f4f2">
+  <title>NFC Player</title>
   <link rel="stylesheet" href="./style.css">
   <script type="module" src="./main.mjs"></script>
 </head>
 <body>
-  <main class="player" data-state="off">
-    <header><h1>福岡の声</h1></header>
+  <main class="player" aria-label="NFCプレーヤー" data-state="off">
     <div class="deck" aria-hidden="true">
-      <div class="platter">
-        <div class="record"><img src="./label.svg" alt=""></div>
-      </div>
+      <img class="map" src="./white-city.jpg" alt="" fetchpriority="high">
       <div class="arm"><i></i></div>
     </div>
     <div class="controls">
