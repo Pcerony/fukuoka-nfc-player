@@ -1,5 +1,5 @@
-import { matchesTag, makePlayer } from './player.mjs';
-import { list, loadBytes } from './cloud.mjs';
+import { matchesTag, makePlayer } from './player.mjs?v=20261123-1';
+import { list, loadBytes } from './cloud.mjs?v=20261123-1';
 
 const deck = document.querySelector('.player');
 const button = document.querySelector('.controls button');
