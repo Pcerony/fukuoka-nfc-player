@@ -50,6 +50,40 @@ button { display: inline-flex; align-items: center; justify-content: center; gap
 button[hidden], p:empty { display: none; }
 button:focus-visible { outline: 2px solid #414440; outline-offset: 4px; }
 button:disabled { cursor: wait; }
+h1 {
+  position: absolute;
+  margin: 0;
+  top: max(.9rem, env(safe-area-inset-top));
+  inset-inline: 3.7rem;
+  text-align: center;
+  font-size: 1.3rem;
+  color: #252525;
+  text-shadow: 0 1px 6px #fff, 0 1px 9px #fff;
+}
+.track {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto auto 2.75rem;
+  align-items: center;
+  gap: .65rem;
+  background: #fafaf8;
+  border: 1px solid #fff;
+  border-radius: 8px;
+  box-shadow: 0 3px 12px #292e2930;
+  padding: .35rem .45rem .35rem .7rem;
+  width: 100%;
+  text-align: left;
+  font-size: .875rem;
+}
+.track[hidden] { display: none; }
+.track .theme { font-weight: 700; overflow-wrap: anywhere; }
+.track .date, .track .duration { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pause { grid-area: auto; height: 2.75rem; min-height: 0; padding: 0; }
+.player:not([data-state="paused"]) .resume-icon,
+.player[data-state="paused"] .pause-icon { display: none; }
+.player:is([data-state="playing"], [data-state="paused"]) p:is([data-transport]) {
+  position: absolute;
+  clip-path: inset(50%);
+}
 .fullscreen {
   position: absolute;
   top: max(.75rem, env(safe-area-inset-top));
@@ -62,5 +96,6 @@ button:disabled { cursor: wait; }
 .fullscreen[aria-pressed="true"] .expand,
 .fullscreen[aria-pressed="false"] .collapse { display: none; }
 p { font-size: .9375rem; }
-button:not([hidden]) ~ p:not(:empty) { grid-area: 2/1; margin-top: .75rem; }
+.enable:not([hidden]) ~ p:not(:empty) { grid-area: 2/1; margin-top: .75rem; }
+p:not([data-transport]):not(:empty):has(~ .track:not([hidden])) { grid-area: 2/1; margin-top: .5rem; }
 @media (prefers-reduced-motion: reduce) { .arm { transition: none; } .record { animation: none; } }
