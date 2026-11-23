@@ -1,6 +1,6 @@
-import { matchesTag, makePlayer } from './player.mjs?v=20261123-4';
-import { list, loadBytes } from './cloud.mjs?v=20261123-4';
-import { PACK_SIZE, preparePack } from './offline.mjs?v=20261123-4';
+import { matchesTag, makePlayer } from './player.mjs?v=20261123-5';
+import { list, loadBytes } from './cloud.mjs?v=20261123-5';
+import { PACK_SIZE, preparePack } from './offline.mjs?v=20261123-5';
 
 const deck = document.querySelector('.player');
 const button = document.querySelector('.controls button');
@@ -94,8 +94,15 @@ button.addEventListener('click', async () => {
     context ??= new AudioContext({latencyHint: 'playback'});
     const unlocked = context.resume();
     reader ??= new NDEFReader();
+    reader.onreadingerror = () => {
+      if (pack) status.textContent = 'カードを検出しましたが、読み取れません';
+    };
     reader.onreading = ({message}) => {
-      if (!pack || !matchesTag(message.records)) return;
+      if (!pack) return;
+      if (!matchesTag(message.records)) {
+        status.textContent = 'カードを読み取りましたが、登録されていません';
+        return;
+      }
       const now = performance.now();
       if (now - lastTap < 450) return;
       lastTap = now;
