@@ -1,6 +1,6 @@
-import { readMarker, makeTagGate, makePlayer } from './player.mjs?v=20261123-7';
-import { list, loadBytes } from './cloud.mjs?v=20261123-7';
-import { PACK_SIZE, preparePack } from './offline.mjs?v=20261123-7';
+import { readMarker, makeTagGate, makePlayer } from './player.mjs?v=20261123-8';
+import { list, loadBytes } from './cloud.mjs?v=20261123-8';
+import { PACK_SIZE, preparePack } from './offline.mjs?v=20261123-8';
 
 const deck = document.querySelector('.player');
 const button = document.querySelector('.enable');
@@ -70,7 +70,16 @@ function state(value, entry) {
   deck.dataset.state = value;
   status.textContent = labels[value];
   track.hidden = value !== 'playing' && value !== 'paused';
-  status.toggleAttribute('data-transport', !track.hidden);
+  status.toggleAttribute('data-transport', value === 'playing');
+  if (value === 'ready' || value === 'paused') {
+    const ja = document.createElement('span');
+    ja.lang = 'ja';
+    ja.textContent = 'レコードを回してください';
+    const en = document.createElement('span');
+    en.lang = 'en';
+    en.textContent = 'Please spin the record';
+    status.replaceChildren(ja, document.createElement('br'), en);
+  }
   if (entry) {
     const date = Date.parse(entry.createdAt);
     const seconds = Math.round(entry.durationSeconds ?? actualDuration);
@@ -161,7 +170,6 @@ button.addEventListener('click', async () => {
     navigator.storage?.persist?.().catch(() => {});
     button.hidden = true;
     state('ready');
-    status.textContent = 'オフライン準備完了 · カードをかざす';
   } catch {
     scan.abort();
     status.textContent = '準備できませんでした。接続を確認して再試行してください。';
