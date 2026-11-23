@@ -50,13 +50,20 @@ button { display: inline-flex; align-items: center; justify-content: center; gap
 button[hidden], p:empty { display: none; }
 button:focus-visible { outline: 2px solid #414440; outline-offset: 4px; }
 button:disabled { cursor: wait; }
+@font-face {
+  font-family: "Exhibition Mincho";
+  src: url("./title-serif.woff2?v=20261123-7") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
 h1 {
   position: absolute;
   margin: 0;
   top: max(.9rem, env(safe-area-inset-top));
-  inset-inline: 3.7rem;
-  text-align: center;
-  font-size: 1.3rem;
+  left: max(1rem, env(safe-area-inset-left));
+  right: 3.7rem;
+  text-align: left;
+  font: 700 1.45rem/1.35 "Exhibition Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
   color: #252525;
   text-shadow: 0 1px 6px #fff, 0 1px 9px #fff;
 }
