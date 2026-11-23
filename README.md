@@ -2,7 +2,9 @@
 
 A standalone NFC-triggered player for a public exhibition audio collection.
 
-Open the GitHub Pages site in Android Chrome and enable NFC. Write the NDEF text `fukuoka-voice-player:v1` to a compatible NFC tag. A tap plays one random recording; another tap interrupts it and selects a different recording when possible. Playback stops at the end.
+Open the GitHub Pages site in Android Chrome and enable NFC. The first setup downloads 18 existing public recordings. Wait for `オフライン準備完了` before disconnecting. Reopen the same site in the same regular Chrome profile and enable NFC again. Clearing site data removes the offline pack. Previously downloaded copies cannot be remotely recalled while offline.
+
+Write one NDEF Text record to each compatible tag: `fukuoka-voice-player:v1`, `fukuoka-voice-player:v1:02`, `fukuoka-voice-player:v1:03`, `fukuoka-voice-player:v1:04`. All four select from the same local pool. A tap plays one random recording; another tap interrupts it and selects a different recording when possible. Playback stops at the end. The page requests a screen wake lock when enabled and again when it returns to the foreground.
 
 The map uses [OpenStreetMap](https://www.openstreetmap.org/copyright) data for the PayPay Dome neighborhood, with the dome roof stylized as a turntable. The site does not store recording files or need operator credentials.
 
@@ -10,4 +12,4 @@ To regenerate the map, download the [OSM map JSON](https://api.openstreetmap.org
 
 Run `node --test` to check the player logic. GitHub Pages serves the `gh-pages` branch, generated with `git subtree split --prefix dist`.
 
-When publishing changes to browser assets, bump the asset version in `dist/index.html` and `dist/main.mjs`. For immediate phone testing, share the page URL with the new version as its query string as well: a versioned entry URL bypasses a stale copy of the HTML, and versioned asset URLs bypass cached CSS, JavaScript, and SVG.
+When publishing website changes, bump the asset version together in `dist/index.html`, `dist/main.mjs`, and `dist/sw.js`. For immediate phone testing, share the page URL with the new version as its query string as well.

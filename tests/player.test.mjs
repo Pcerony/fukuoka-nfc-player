@@ -14,6 +14,14 @@ test('never immediately repeats when alternatives exist', () => {
   assert.equal(pick([{id: 'a'}], 'a', () => 0).id, 'a');
 });
 
+test('accepts the four installation markers and no fifth marker', () => {
+  const encode = value => [{recordType: 'text', data: new TextEncoder().encode(value)}];
+  for (const marker of ['v1', 'v1:02', 'v1:03', 'v1:04']) {
+    assert.equal(matchesTag(encode('fukuoka-voice-player:' + marker)), true);
+  }
+  assert.equal(matchesTag(encode('fukuoka-voice-player:v1:05')), false);
+});
+
 test('a newer tap wins and natural completion does not advance', async () => {
   let release;
   let first = true;

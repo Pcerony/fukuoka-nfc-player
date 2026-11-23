@@ -1,10 +1,27 @@
-import { matchesTag, makePlayer } from './player.mjs?v=20261123-2';
-import { list, loadBytes } from './cloud.mjs?v=20261123-2';
+import { matchesTag, makePlayer } from './player.mjs?v=20261123-4';
+import { list, loadBytes } from './cloud.mjs?v=20261123-4';
+import { PACK_SIZE, preparePack } from './offline.mjs?v=20261123-4';
 
 const deck = document.querySelector('.player');
 const button = document.querySelector('.controls button');
 const status = document.querySelector('[role="status"]');
 const fullscreen = document.querySelector('.fullscreen');
+const scope = new URL('./', location.href).href;
+let pack, wakeLock, wakePending, keepAwake = false;
+
+async function holdScreen() {
+  if (!keepAwake || wakePending || !navigator.wakeLock || document.hidden || (wakeLock && !wakeLock.released)) return;
+  wakePending = true;
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+  } catch {
+    // The OS can deny a wake lock without affecting playback.
+  } finally {
+    wakePending = false;
+  }
+}
+
+document.addEventListener('visibilitychange', holdScreen);
 
 if (document.fullscreenEnabled) {
   fullscreen.hidden = false;
@@ -12,6 +29,7 @@ if (document.fullscreenEnabled) {
     const expanded = Boolean(document.fullscreenElement);
     fullscreen.setAttribute('aria-pressed', String(expanded));
     fullscreen.title = expanded ? '全画面を終了' : '全画面';
+    void holdScreen();
   });
   fullscreen.addEventListener('click', async () => {
     try {
@@ -28,14 +46,28 @@ const labels = {
 };
 let context, reader, lastTap = -Infinity;
 
+async function setupOffline() {
+  await navigator.serviceWorker.register('./sw.js', {updateViaCache: 'none'});
+  await Promise.race([
+    navigator.serviceWorker.ready,
+    new Promise((_, reject) => setTimeout(() => reject(Error('Offline page not ready')), 15000)),
+  ]);
+  const cache = await caches.open('fukuoka-nfc-audio-v1:' + scope);
+  return preparePack(cache, scope, {
+    list: () => list(AbortSignal.timeout(20000)),
+    load: entry => loadBytes(entry, AbortSignal.timeout(12000)),
+    progress: count => { status.textContent = `ダウンロード中 ${count}/${PACK_SIZE}`; },
+  });
+}
+
 function state(value) {
   deck.dataset.state = value;
   status.textContent = labels[value];
 }
 
 const player = makePlayer({
-  list,
-  load: async (entry, signal) => context.decodeAudioData(await loadBytes(entry, signal)),
+  list: async () => pack.entries,
+  load: async entry => context.decodeAudioData(await pack.load(entry)),
   start(buffer, finish) {
     if (context.state !== 'running') throw Error('Audio suspended');
     const source = context.createBufferSource();
@@ -55,22 +87,38 @@ if (!('NDEFReader' in window) || !window.isSecureContext) {
 
 button.addEventListener('click', async () => {
   button.disabled = true;
+  keepAwake = true;
+  void holdScreen();
+  const scan = new AbortController();
   try {
     context ??= new AudioContext({latencyHint: 'playback'});
     const unlocked = context.resume();
     reader ??= new NDEFReader();
     reader.onreading = ({message}) => {
-      if (!matchesTag(message.records)) return;
+      if (!pack || !matchesTag(message.records)) return;
       const now = performance.now();
       if (now - lastTap < 450) return;
       lastTap = now;
+      void holdScreen();
       void player.tap();
     };
-    await Promise.all([unlocked, reader.scan()]);
+    await Promise.all([unlocked, reader.scan({signal: scan.signal})]);
+  } catch {
+    scan.abort();
+    status.textContent = 'NFCを開始できませんでした';
+    button.disabled = false;
+    return;
+  }
+  try {
+    status.textContent = 'オフライン再生を準備中';
+    pack = await setupOffline();
+    navigator.storage?.persist?.().catch(() => {});
     button.hidden = true;
     state('ready');
+    status.textContent = 'オフライン準備完了 · カードをかざす';
   } catch {
-    status.textContent = 'NFCを開始できませんでした';
+    scan.abort();
+    status.textContent = '準備できませんでした。接続を確認して再試行してください。';
   } finally {
     button.disabled = false;
   }
