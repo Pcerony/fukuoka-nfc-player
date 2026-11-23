@@ -1,6 +1,6 @@
-import { readMarker, makeTagGate, makePlayer, makeScanner } from './player.mjs?v=20261123-11';
-import { list, loadBytes } from './cloud.mjs?v=20261123-11';
-import { PACK_SIZE, preparePack } from './offline.mjs?v=20261123-11';
+import { readMarker, makeTagGate, makePlayer, makeScanner } from './player.mjs?v=20261123-12';
+import { list, loadBytes } from './cloud.mjs?v=20261123-12';
+import { PACK_SIZE, preparePack } from './offline.mjs?v=20261123-12';
 
 const deck = document.querySelector('.player');
 const button = document.querySelector('.enable');
@@ -139,7 +139,7 @@ function scanMessage(text) {
 const scanner = makeScanner({
   create: () => new NDEFReader(),
   onError: () => {
-    if (pack) scanMessage('カードを検出しましたが、読み取れません');
+    if (pack && !idleDialog.open) scanMessage('カードを検出しましたが、読み取れません');
   },
   onRead: ({message}) => {
     if (!pack || idleDialog.open) return;
@@ -176,7 +176,7 @@ async function reconnectScan(manual = false) {
 function checkIdle() {
   if (!pack || idleDialog.open || document.hidden || scanPending) return;
   if (['playing', 'loading'].includes(deck.dataset.state) || Date.now() - lastActivity < IDLE_MS) return;
-  scanner.stop();
+  // Keep Chrome's NFC scan active so Android does not handle the tag instead.
   idleDialog.showModal();
 }
 
