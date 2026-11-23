@@ -1,6 +1,6 @@
-import { readMarker, makeTagGate, makePlayer, makeScanner } from './player.mjs?v=20261123-10';
-import { list, loadBytes } from './cloud.mjs?v=20261123-10';
-import { PACK_SIZE, preparePack } from './offline.mjs?v=20261123-10';
+import { readMarker, makeTagGate, makePlayer, makeScanner } from './player.mjs?v=20261123-11';
+import { list, loadBytes } from './cloud.mjs?v=20261123-11';
+import { PACK_SIZE, preparePack } from './offline.mjs?v=20261123-11';
 
 const deck = document.querySelector('.player');
 const button = document.querySelector('.enable');
@@ -9,6 +9,11 @@ const fullscreen = document.querySelector('.fullscreen');
 const track = document.querySelector('.track');
 const pause = document.querySelector('.pause');
 const reconnect = document.querySelector('.reconnect');
+const idleDialog = document.querySelector('.idle-dialog');
+const activate = document.querySelector('.activate');
+const wakeError = document.querySelector('.wake-error');
+const IDLE_MS = 120000;
+let lastActivity = Date.now();
 const acceptMarker = makeTagGate();
 const themes = {A: '食べ物', B: '旅行', C: '出会い', D: 'その他の思い出'};
 const japanDate = new Intl.DateTimeFormat('ja-JP', {timeZone: 'Asia/Tokyo'});
@@ -68,6 +73,7 @@ async function setupOffline() {
 }
 
 function state(value, entry) {
+  if (value !== deck.dataset.state) lastActivity = Date.now();
   deck.dataset.state = value;
   status.textContent = labels[value];
   track.hidden = value !== 'playing' && value !== 'paused';
@@ -136,7 +142,7 @@ const scanner = makeScanner({
     if (pack) scanMessage('カードを検出しましたが、読み取れません');
   },
   onRead: ({message}) => {
-    if (!pack) return;
+    if (!pack || idleDialog.open) return;
     const marker = readMarker(message.records);
     if (!marker) {
       scanMessage('カードを読み取りましたが、登録されていません');
@@ -150,24 +156,56 @@ const scanner = makeScanner({
 });
 
 async function reconnectScan(manual = false) {
-  if (!pack || document.hidden || scanPending) return;
+  if (!pack || document.hidden || scanPending || (idleDialog.open && !manual)) return false;
   scanPending = reconnect.disabled = true;
   scanSince = Date.now();
   try {
     await scanner.restart(10000);
     if (manual || status.dataset.scanFailed) state(deck.dataset.state);
     delete status.dataset.scanFailed;
+    return true;
   } catch {
     status.dataset.scanFailed = 'true';
     scanMessage('NFCを再接続できませんでした');
+    return false;
   } finally {
     scanPending = reconnect.disabled = false;
   }
 }
 
+function checkIdle() {
+  if (!pack || idleDialog.open || document.hidden || scanPending) return;
+  if (['playing', 'loading'].includes(deck.dataset.state) || Date.now() - lastActivity < IDLE_MS) return;
+  scanner.stop();
+  idleDialog.showModal();
+}
+
+async function activateFromIdle() {
+  if (activate.disabled) return;
+  activate.disabled = true;
+  wakeError.textContent = '';
+  lastActivity = Date.now();
+  void holdScreen();
+  try {
+    if (await reconnectScan(true)) idleDialog.close();
+    else wakeError.textContent = 'NFCを再接続できませんでした';
+  } finally {
+    activate.disabled = false;
+  }
+}
+
+activate.addEventListener('click', () => void activateFromIdle());
+idleDialog.addEventListener('click', event => {
+  if (event.target === idleDialog) void activateFromIdle();
+});
+idleDialog.addEventListener('cancel', event => event.preventDefault());
+document.addEventListener('pointerdown', () => { lastActivity = Date.now(); });
 reconnect.addEventListener('click', () => void reconnectScan(true));
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) void reconnectScan();
+  if (!document.hidden) {
+    checkIdle();
+    void reconnectScan();
+  }
 });
 
 if (!('NDEFReader' in window) || !window.isSecureContext) {
@@ -196,6 +234,7 @@ button.addEventListener('click', async () => {
     button.hidden = true;
     reconnect.hidden = false;
     scanSince = Date.now();
+    setInterval(checkIdle, 1000);
     setInterval(() => {
       if (Date.now() - scanSince >= 60000) void reconnectScan();
     }, 15000);
