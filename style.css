@@ -52,7 +52,7 @@ button:focus-visible { outline: 2px solid #414440; outline-offset: 4px; }
 button:disabled { cursor: wait; }
 @font-face {
   font-family: "Exhibition Mincho";
-  src: url("./title-serif.woff2?v=20261123-9") format("woff2");
+  src: url("./title-serif.woff2?v=20261123-10") format("woff2");
   font-weight: 700;
   font-display: swap;
 }
@@ -91,7 +91,7 @@ h1 {
   position: absolute;
   clip-path: inset(50%);
 }
-.fullscreen {
+.fullscreen, .reconnect {
   position: absolute;
   top: max(.75rem, env(safe-area-inset-top));
   right: max(.75rem, env(safe-area-inset-right));
@@ -99,6 +99,11 @@ h1 {
   height: 2.75rem;
   min-height: 0;
   padding: 0;
+}
+.reconnect {
+  top: calc(max(.9rem, env(safe-area-inset-top)) + 2.5rem);
+  right: auto;
+  left: max(1rem, env(safe-area-inset-left));
 }
 .fullscreen[aria-pressed="true"] .expand,
 .fullscreen[aria-pressed="false"] .collapse { display: none; }
