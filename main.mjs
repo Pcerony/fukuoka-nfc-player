@@ -1,6 +1,6 @@
-import { readMarker, makeTagGate, makePlayer } from './player.mjs?v=20261123-6';
-import { list, loadBytes } from './cloud.mjs?v=20261123-6';
-import { PACK_SIZE, preparePack } from './offline.mjs?v=20261123-6';
+import { readMarker, makeTagGate, makePlayer } from './player.mjs?v=20261123-7';
+import { list, loadBytes } from './cloud.mjs?v=20261123-7';
+import { PACK_SIZE, preparePack } from './offline.mjs?v=20261123-7';
 
 const deck = document.querySelector('.player');
 const button = document.querySelector('.enable');

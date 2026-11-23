@@ -1,9 +1,9 @@
-const VERSION = '20261123-6';
+const VERSION = '20261123-7';
 const PREFIX = 'fukuoka-nfc-shell-';
 const CACHE = PREFIX + VERSION;
 const scope = self.registration.scope;
 const index = new URL('index.html', scope).href;
-const assets = ['style.css', 'dome-map.svg', 'main.mjs', 'offline.mjs', 'player.mjs', 'cloud.mjs']
+const assets = ['style.css', 'dome-map.svg', 'main.mjs', 'offline.mjs', 'player.mjs', 'cloud.mjs', 'title-serif.woff2']
   .map(file => new URL(file + '?v=' + VERSION, scope).href);
 
 self.addEventListener('install', event => {
