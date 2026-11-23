@@ -1,6 +1,6 @@
-import { readMarker, makeTagGate, makePlayer } from './player.mjs?v=20261123-9';
-import { list, loadBytes } from './cloud.mjs?v=20261123-9';
-import { PACK_SIZE, preparePack } from './offline.mjs?v=20261123-9';
+import { readMarker, makeTagGate, makePlayer, makeScanner } from './player.mjs?v=20261123-10';
+import { list, loadBytes } from './cloud.mjs?v=20261123-10';
+import { PACK_SIZE, preparePack } from './offline.mjs?v=20261123-10';
 
 const deck = document.querySelector('.player');
 const button = document.querySelector('.enable');
@@ -8,6 +8,7 @@ const status = document.querySelector('[role="status"]');
 const fullscreen = document.querySelector('.fullscreen');
 const track = document.querySelector('.track');
 const pause = document.querySelector('.pause');
+const reconnect = document.querySelector('.reconnect');
 const acceptMarker = makeTagGate();
 const themes = {A: '食べ物', B: '旅行', C: '出会い', D: 'その他の思い出'};
 const japanDate = new Intl.DateTimeFormat('ja-JP', {timeZone: 'Asia/Tokyo'});
@@ -50,7 +51,7 @@ const labels = {
   paused: '一時停止中',
   empty: '再生できる録音がありません', error: '再生できませんでした。もう一度かざしてください。',
 };
-let context, reader, actualDuration, contextTransition;
+let context, actualDuration, contextTransition, scanPending, scanSince = 0;
 
 async function setupOffline() {
   await navigator.serviceWorker.register('./sw.js', {updateViaCache: 'none'});
@@ -129,6 +130,46 @@ function scanMessage(text) {
   status.textContent = text;
 }
 
+const scanner = makeScanner({
+  create: () => new NDEFReader(),
+  onError: () => {
+    if (pack) scanMessage('カードを検出しましたが、読み取れません');
+  },
+  onRead: ({message}) => {
+    if (!pack) return;
+    const marker = readMarker(message.records);
+    if (!marker) {
+      scanMessage('カードを読み取りましたが、登録されていません');
+      return;
+    }
+    if (!acceptMarker(marker)) return;
+    scanSince = Date.now();
+    void holdScreen();
+    void player.tap();
+  },
+});
+
+async function reconnectScan(manual = false) {
+  if (!pack || document.hidden || scanPending) return;
+  scanPending = reconnect.disabled = true;
+  scanSince = Date.now();
+  try {
+    await scanner.restart(10000);
+    if (manual || status.dataset.scanFailed) state(deck.dataset.state);
+    delete status.dataset.scanFailed;
+  } catch {
+    status.dataset.scanFailed = 'true';
+    scanMessage('NFCを再接続できませんでした');
+  } finally {
+    scanPending = reconnect.disabled = false;
+  }
+}
+
+reconnect.addEventListener('click', () => void reconnectScan(true));
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) void reconnectScan();
+});
+
 if (!('NDEFReader' in window) || !window.isSecureContext) {
   button.hidden = true;
   status.textContent = 'NFCはAndroid版Chromeで使えます';
@@ -138,28 +179,12 @@ button.addEventListener('click', async () => {
   button.disabled = true;
   keepAwake = true;
   void holdScreen();
-  const scan = new AbortController();
   try {
     context ??= new AudioContext({latencyHint: 'playback'});
     const unlocked = context.resume();
-    reader ??= new NDEFReader();
-    reader.onreadingerror = () => {
-      if (pack) scanMessage('カードを検出しましたが、読み取れません');
-    };
-    reader.onreading = ({message}) => {
-      if (!pack) return;
-      const marker = readMarker(message.records);
-      if (!marker) {
-        scanMessage('カードを読み取りましたが、登録されていません');
-        return;
-      }
-      if (!acceptMarker(marker)) return;
-      void holdScreen();
-      void player.tap();
-    };
-    await Promise.all([unlocked, reader.scan({signal: scan.signal})]);
+    await Promise.all([unlocked, scanner.restart()]);
   } catch {
-    scan.abort();
+    scanner.stop();
     status.textContent = 'NFCを開始できませんでした';
     button.disabled = false;
     return;
@@ -169,9 +194,14 @@ button.addEventListener('click', async () => {
     pack = await setupOffline();
     navigator.storage?.persist?.().catch(() => {});
     button.hidden = true;
+    reconnect.hidden = false;
+    scanSince = Date.now();
+    setInterval(() => {
+      if (Date.now() - scanSince >= 60000) void reconnectScan();
+    }, 15000);
     state('ready');
   } catch {
-    scan.abort();
+    scanner.stop();
     status.textContent = '準備できませんでした。接続を確認して再試行してください。';
   } finally {
     button.disabled = false;

@@ -1,4 +1,4 @@
-const VERSION = '20261123-9';
+const VERSION = '20261123-10';
 const PREFIX = 'fukuoka-nfc-shell-';
 const CACHE = PREFIX + VERSION;
 const scope = self.registration.scope;

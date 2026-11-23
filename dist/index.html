@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f4f4f2">
   <title>ふくおかの足音</title>
-  <link rel="stylesheet" href="./style.css?v=20261123-9">
-  <script type="module" src="./main.mjs?v=20261123-9"></script>
+  <link rel="stylesheet" href="./style.css?v=20261123-10">
+  <script type="module" src="./main.mjs?v=20261123-10"></script>
 </head>
 <body>
   <main class="player" aria-label="NFCプレーヤー" data-state="off">
@@ -40,11 +40,11 @@
           </filter>
         </defs>
         <g class="scene">
-        <image href="./dome-map.svg?v=20261123-9" width="1000" height="1000"/>
+        <image href="./dome-map.svg?v=20261123-10" width="1000" height="1000"/>
         <circle cx="500" cy="500" r="89" fill="url(#roof)" stroke="#fff" stroke-width="2" filter="url(#shadow)"/>
         <g class="record" fill="none" stroke="#bfbfbd" stroke-width="1">
           <circle cx="500" cy="500" r="81" fill="url(#vinyl)" stroke="#121214" stroke-width="2"/>
-          <image href="./record-artwork.png?v=20261123-9" x="420" y="420" width="160" height="160" clip-path="url(#record-face)"/>
+          <image href="./record-artwork.png?v=20261123-10" x="420" y="420" width="160" height="160" clip-path="url(#record-face)"/>
         </g>
         <g transform="translate(-65 0)"><g class="arm" filter="url(#shadow)">
           <circle cx="665" cy="317" r="23" fill="url(#needle)" stroke="#aaa" stroke-width=".7"/>
@@ -84,6 +84,11 @@
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path class="expand" d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m13-5v3a2 2 0 0 1-2 2h-3"/>
         <path class="collapse" d="M8 3v3a2 2 0 0 1-2 2H3m13-5v3a2 2 0 0 0 2 2h3M3 16h3a2 2 0 0 1 2 2v3m13-5h-3a2 2 0 0 0-2 2v3"/>
+      </svg>
+    </button>
+    <button class="reconnect" type="button" aria-label="NFCを再接続" title="NFCを再接続" hidden>
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20 11a8 8 0 1 0-2 6m2-12v6h-6"/>
       </svg>
     </button>
   </main>

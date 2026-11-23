@@ -24,6 +24,36 @@ export function makeTagGate() {
   };
 }
 
+export function makeScanner({create, onRead, onError}) {
+  let session;
+  function stop() {
+    session?.abort();
+    session = undefined;
+  }
+  return {
+    stop,
+    async restart(timeout) {
+      stop();
+      const controller = session = new AbortController();
+      const {signal} = controller;
+      let timer;
+      try {
+        const reader = create();
+        reader.onreading = event => { if (!signal.aborted) onRead?.(event); };
+        reader.onreadingerror = event => { if (!signal.aborted) onError?.(event); };
+        if (timeout) timer = setTimeout(() => controller.abort(), timeout);
+        await reader.scan({signal});
+        if (signal.aborted) throw Error('NFC scan stopped');
+      } catch (error) {
+        controller.abort();
+        throw error;
+      } finally {
+        clearTimeout(timer);
+      }
+    },
+  };
+}
+
 export function pick(items, last, random = Math.random) {
   const alternatives = items.filter(item => item.id !== last);
   const pool = alternatives.length ? alternatives : items;
