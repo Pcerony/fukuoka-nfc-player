@@ -1,6 +1,14 @@
+const markers = new Set(['v1', 'v1:02', 'v1:03', 'v1:04'].map(value => 'fukuoka-voice-player:' + value));
+
 export function matchesTag(records) {
-  return records.some(record => record.recordType === 'text' && record.data &&
-    new TextDecoder(record.encoding || 'utf-8').decode(record.data) === 'fukuoka-voice-player:v1');
+  return records.some(record => {
+    if (record.recordType !== 'text' || !record.data) return false;
+    try {
+      return markers.has(new TextDecoder(record.encoding || 'utf-8').decode(record.data));
+    } catch {
+      return false;
+    }
+  });
 }
 
 export function pick(items, last, random = Math.random) {
