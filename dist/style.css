@@ -52,7 +52,7 @@ button:focus-visible { outline: 2px solid #414440; outline-offset: 4px; }
 button:disabled { cursor: wait; }
 @font-face {
   font-family: "Exhibition Mincho";
-  src: url("./title-serif.woff2?v=20261123-12") format("woff2");
+  src: url("./title-serif.woff2?v=20261123-13") format("woff2");
   font-weight: 700;
   font-display: swap;
 }

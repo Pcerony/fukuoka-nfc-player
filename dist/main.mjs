@@ -1,6 +1,6 @@
-import { readMarker, makeTagGate, makePlayer, makeScanner } from './player.mjs?v=20261123-12';
-import { list, loadBytes } from './cloud.mjs?v=20261123-12';
-import { PACK_SIZE, preparePack } from './offline.mjs?v=20261123-12';
+import { readMarker, makeTagGate, makePlayer, makeScanner } from './player.mjs?v=20261123-13';
+import { list, loadBytes } from './cloud.mjs?v=20261123-13';
+import { PACK_SIZE, preparePack } from './offline.mjs?v=20261123-13';
 
 const deck = document.querySelector('.player');
 const button = document.querySelector('.enable');
@@ -12,6 +12,12 @@ const reconnect = document.querySelector('.reconnect');
 const idleDialog = document.querySelector('.idle-dialog');
 const activate = document.querySelector('.activate');
 const wakeError = document.querySelector('.wake-error');
+const recoveryKey = 'fukuoka-nfc-recovery:' + location.pathname;
+let recoveryMode;
+try {
+  recoveryMode = sessionStorage.getItem(recoveryKey);
+  sessionStorage.removeItem(recoveryKey);
+} catch {}
 const IDLE_MS = 120000;
 let lastActivity = Date.now();
 const acceptMarker = makeTagGate();
@@ -155,13 +161,13 @@ const scanner = makeScanner({
   },
 });
 
-async function reconnectScan(manual = false) {
-  if (!pack || document.hidden || scanPending || (idleDialog.open && !manual)) return false;
+async function reconnectScan() {
+  if (!pack || document.hidden || scanPending || idleDialog.open) return false;
   scanPending = reconnect.disabled = true;
   scanSince = Date.now();
   try {
     await scanner.restart(10000);
-    if (manual || status.dataset.scanFailed) state(deck.dataset.state);
+    if (status.dataset.scanFailed) state(deck.dataset.state);
     delete status.dataset.scanFailed;
     return true;
   } catch {
@@ -180,27 +186,35 @@ function checkIdle() {
   idleDialog.showModal();
 }
 
-async function activateFromIdle() {
-  if (activate.disabled) return;
-  activate.disabled = true;
-  wakeError.textContent = '';
-  lastActivity = Date.now();
-  void holdScreen();
+function reloadForRecovery() {
   try {
-    if (await reconnectScan(true)) idleDialog.close();
-    else wakeError.textContent = 'NFCを再接続できませんでした';
-  } finally {
-    activate.disabled = false;
+    sessionStorage.setItem(recoveryKey, document.fullscreenElement ? 'fullscreen' : 'window');
+  } catch {}
+  // Reload the document because renewing the NFC reader alone can leave it stalled.
+  location.reload();
+}
+
+function activateFromIdle() {
+  if (activate.disabled) return;
+  if (!recoveryMode) {
+    activate.disabled = true;
+    reloadForRecovery();
+    return;
+  }
+  wakeError.textContent = '';
+  button.click();
+  if (recoveryMode === 'fullscreen' && document.fullscreenEnabled && !document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {});
   }
 }
 
-activate.addEventListener('click', () => void activateFromIdle());
+activate.addEventListener('click', activateFromIdle);
 idleDialog.addEventListener('click', event => {
-  if (event.target === idleDialog) void activateFromIdle();
+  if (event.target === idleDialog) activateFromIdle();
 });
 idleDialog.addEventListener('cancel', event => event.preventDefault());
 document.addEventListener('pointerdown', () => { lastActivity = Date.now(); });
-reconnect.addEventListener('click', () => void reconnectScan(true));
+reconnect.addEventListener('click', reloadForRecovery);
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) {
     checkIdle();
@@ -211,10 +225,15 @@ document.addEventListener('visibilitychange', () => {
 if (!('NDEFReader' in window) || !window.isSecureContext) {
   button.hidden = true;
   status.textContent = 'NFCはAndroid版Chromeで使えます';
+} else if (recoveryMode) {
+  activate.querySelector('[lang="ja"]').textContent = 'NFCを有効にする';
+  activate.querySelector('[lang="en"]').textContent = 'Enable NFC';
+  idleDialog.showModal();
 }
 
 button.addEventListener('click', async () => {
   button.disabled = true;
+  if (recoveryMode) activate.disabled = true;
   keepAwake = true;
   void holdScreen();
   try {
@@ -224,6 +243,10 @@ button.addEventListener('click', async () => {
   } catch {
     scanner.stop();
     status.textContent = 'NFCを開始できませんでした';
+    if (recoveryMode) {
+      wakeError.textContent = status.textContent;
+      activate.disabled = false;
+    }
     button.disabled = false;
     return;
   }
@@ -233,6 +256,12 @@ button.addEventListener('click', async () => {
     navigator.storage?.persist?.().catch(() => {});
     button.hidden = true;
     reconnect.hidden = false;
+    if (recoveryMode) {
+      idleDialog.close();
+      recoveryMode = undefined;
+      activate.querySelector('[lang="ja"]').textContent = '画面をタップして再開';
+      activate.querySelector('[lang="en"]').textContent = 'Tap the screen to activate';
+    }
     scanSince = Date.now();
     setInterval(checkIdle, 1000);
     setInterval(() => {
@@ -242,7 +271,9 @@ button.addEventListener('click', async () => {
   } catch {
     scanner.stop();
     status.textContent = '準備できませんでした。接続を確認して再試行してください。';
+    if (recoveryMode) wakeError.textContent = status.textContent;
   } finally {
     button.disabled = false;
+    activate.disabled = false;
   }
 });
