@@ -1,14 +1,27 @@
 const markers = new Set(['v1', 'v1:02', 'v1:03', 'v1:04'].map(value => 'fukuoka-voice-player:' + value));
 
-export function matchesTag(records) {
-  return records.some(record => {
-    if (record.recordType !== 'text' || !record.data) return false;
+export function readMarker(records) {
+  for (const record of records) {
+    if (record.recordType !== 'text' || !record.data) continue;
     try {
-      return markers.has(new TextDecoder(record.encoding || 'utf-8').decode(record.data));
-    } catch {
-      return false;
-    }
-  });
+      const text = new TextDecoder(record.encoding || 'utf-8').decode(record.data);
+      if (markers.has(text)) return text;
+    } catch {}
+  }
+  return null;
+}
+
+export function matchesTag(records) {
+  return readMarker(records) !== null;
+}
+
+export function makeTagGate() {
+  let last;
+  return marker => {
+    if (!marker || marker === last) return false;
+    last = marker;
+    return true;
+  };
 }
 
 export function pick(items, last, random = Math.random) {
@@ -40,7 +53,7 @@ export function makePlayer({list, load, start, state}) {
           }
         });
         last = entry.id;
-        state('playing');
+        state('playing', entry);
       } catch {
         if (!signal.aborted) state('error');
       }

@@ -18,7 +18,9 @@ export async function list(signal) {
     const query = new URLSearchParams({limit: '100'});
     if (cursor) query.set('cursor', cursor);
     const page = await request('public-map?' + query, signal);
-    for (const {id, token} of page.items) entries.set(id, {id, token});
+    for (const {id, token, categoryCode, createdAt, durationSeconds} of page.items) {
+      entries.set(id, {id, token, categoryCode, createdAt, durationSeconds});
+    }
     cursor = page.nextCursor;
     if (cursor !== null && (typeof cursor !== 'string' || !cursor || visited.has(cursor) || visited.size >= 100)) {
       throw Error('Invalid recording catalog');

@@ -16,3 +16,17 @@ test('downloads 18 recordings once and opens the same pack without network', asy
   assert.deepEqual(reopened.entries, pack.entries);
   assert.deepEqual(new Uint8Array(await reopened.load(reopened.entries[0])), new Uint8Array([1, 2, 3]));
 });
+
+test('enriches a legacy offline pack without redownloading audio', async () => {
+  const scope = 'https://example.com/player/';
+  const entries = Array.from({length: 18}, (_, i) => ({id: String(i)}));
+  const records = new Map(entries.map(({id}) => [scope + '.offline-audio/' + id, new Response('audio')]));
+  records.set(scope + '.offline-audio/manifest', Response.json(entries));
+  const cache = {match: async key => records.get(key)?.clone(), put: async (key, value) => records.set(key, value)};
+  const pack = await preparePack(cache, scope, {
+    list: async () => entries.map(entry => ({...entry, categoryCode: 'A', createdAt: '2026-10-17T00:00:00Z', durationSeconds: 42})),
+    load: () => assert.fail('existing audio should not be downloaded again'),
+  });
+  assert.equal(pack.entries[0].categoryCode, 'A');
+  assert.equal(pack.entries[0].durationSeconds, 42);
+});

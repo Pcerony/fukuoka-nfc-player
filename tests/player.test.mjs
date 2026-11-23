@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { matchesTag, pick, makePlayer } from '../dist/player.mjs';
+import { matchesTag, pick, makePlayer, makeTagGate } from '../dist/player.mjs';
 
 test('accepts only the exhibition NDEF text marker', () => {
   const data = new TextEncoder().encode('fukuoka-voice-player:v1');
@@ -20,6 +20,17 @@ test('accepts the four installation markers and no fifth marker', () => {
     assert.equal(matchesTag(encode('fukuoka-voice-player:' + marker)), true);
   }
   assert.equal(matchesTag(encode('fukuoka-voice-player:v1:05')), false);
+});
+
+test('ignores repeated reads until a different registered card is tapped', () => {
+  const accept = makeTagGate();
+  const a = 'fukuoka-voice-player:v1', b = 'fukuoka-voice-player:v1:02';
+  assert.equal(accept(a), true);
+  assert.equal(accept(a), false);
+  assert.equal(accept(null), false);
+  assert.equal(accept(a), false);
+  assert.equal(accept(b), true);
+  assert.equal(accept(a), true);
 });
 
 test('a newer tap wins and natural completion does not advance', async () => {

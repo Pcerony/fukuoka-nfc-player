@@ -1,4 +1,7 @@
 export const PACK_SIZE = 18;
+const metadata = ({id, categoryCode, createdAt, durationSeconds}) => ({
+  id, categoryCode: categoryCode ?? null, createdAt: createdAt ?? null, durationSeconds: durationSeconds ?? null,
+});
 
 export async function preparePack(cache, scope, {list, load, progress = () => {}}) {
   const manifest = new URL('.offline-audio/manifest', scope).href;
@@ -17,12 +20,19 @@ export async function preparePack(cache, scope, {list, load, progress = () => {}
         if (!bytes.byteLength) continue;
         await cache.put(url, new Response(bytes));
       }
-      entries.push({id: entry.id});
+      entries.push(metadata(entry));
       progress(entries.length);
       if (entries.length === PACK_SIZE) break;
     }
     if (entries.length !== PACK_SIZE) throw Error('Offline audio pack incomplete');
     await cache.put(manifest, Response.json(entries));
+  } else if (entries.some(entry => !Object.hasOwn(entry, 'createdAt'))) {
+    const catalog = await list().catch(() => null);
+    if (catalog) {
+      const byId = new Map(catalog.map(entry => [entry.id, entry]));
+      entries = entries.map(entry => metadata(byId.get(entry.id) ?? entry));
+      await cache.put(manifest, Response.json(entries));
+    }
   }
   return {
     entries,

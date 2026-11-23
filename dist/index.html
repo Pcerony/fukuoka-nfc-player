@@ -4,12 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f4f4f2">
-  <title>NFC Player</title>
-  <link rel="stylesheet" href="./style.css?v=20261123-5">
-  <script type="module" src="./main.mjs?v=20261123-5"></script>
+  <title>ふくおかの足音</title>
+  <link rel="stylesheet" href="./style.css?v=20261123-6">
+  <script type="module" src="./main.mjs?v=20261123-6"></script>
 </head>
 <body>
   <main class="player" aria-label="NFCプレーヤー" data-state="off">
+    <h1>ふくおかの足音</h1>
     <div class="deck" aria-hidden="true">
       <svg class="map" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice">
         <defs>
@@ -45,7 +46,7 @@
           </filter>
         </defs>
         <g class="scene">
-        <image href="./dome-map.svg?v=20261123-5" width="1000" height="1000"/>
+        <image href="./dome-map.svg?v=20261123-6" width="1000" height="1000"/>
         <circle cx="500" cy="500" r="89" fill="url(#roof)" stroke="#fff" stroke-width="2" filter="url(#shadow)"/>
         <g class="record" fill="none" stroke="#bfbfbd" stroke-width="1">
           <circle cx="500" cy="500" r="81" fill="url(#vinyl)" stroke="#121214" stroke-width="2"/>
@@ -81,13 +82,24 @@
     </div>
     <a class="attribution" href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a>
     <div class="controls">
-      <button type="button">
+      <button class="enable" type="button">
         <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
           <path d="M5 9a4 4 0 0 1 0 6m4-9a8 8 0 0 1 0 12m4-15a12 12 0 0 1 0 18"/>
         </svg>
         NFCを有効にする
       </button>
       <p role="status"></p>
+      <div class="track" hidden>
+        <span class="theme"></span>
+        <span class="date"></span>
+        <span class="duration"></span>
+        <button class="pause" type="button" aria-label="一時停止" title="一時停止">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+            <path class="pause-icon" d="M7 5h3v14H7zm7 0h3v14h-3z"/>
+            <path class="resume-icon" d="M8 5v14l11-7z"/>
+          </svg>
+        </button>
+      </div>
     </div>
     <button class="fullscreen" type="button" aria-label="全画面" title="全画面" aria-pressed="false" hidden>
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

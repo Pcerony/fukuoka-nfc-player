@@ -1,11 +1,16 @@
-import { matchesTag, makePlayer } from './player.mjs?v=20261123-5';
-import { list, loadBytes } from './cloud.mjs?v=20261123-5';
-import { PACK_SIZE, preparePack } from './offline.mjs?v=20261123-5';
+import { readMarker, makeTagGate, makePlayer } from './player.mjs?v=20261123-6';
+import { list, loadBytes } from './cloud.mjs?v=20261123-6';
+import { PACK_SIZE, preparePack } from './offline.mjs?v=20261123-6';
 
 const deck = document.querySelector('.player');
-const button = document.querySelector('.controls button');
+const button = document.querySelector('.enable');
 const status = document.querySelector('[role="status"]');
 const fullscreen = document.querySelector('.fullscreen');
+const track = document.querySelector('.track');
+const pause = document.querySelector('.pause');
+const acceptMarker = makeTagGate();
+const themes = {A: '食べ物', B: '旅行', C: '出会い', D: 'その他の思い出'};
+const japanDate = new Intl.DateTimeFormat('ja-JP', {timeZone: 'Asia/Tokyo'});
 const scope = new URL('./', location.href).href;
 let pack, wakeLock, wakePending, keepAwake = false;
 
@@ -42,9 +47,10 @@ if (document.fullscreenEnabled) {
 }
 const labels = {
   ready: 'カードをかざす', loading: '読み込み中', playing: '再生中',
+  paused: '一時停止中',
   empty: '再生できる録音がありません', error: '再生できませんでした。もう一度かざしてください。',
 };
-let context, reader, lastTap = -Infinity;
+let context, reader, actualDuration, contextTransition;
 
 async function setupOffline() {
   await navigator.serviceWorker.register('./sw.js', {updateViaCache: 'none'});
@@ -60,17 +66,33 @@ async function setupOffline() {
   });
 }
 
-function state(value) {
+function state(value, entry) {
   deck.dataset.state = value;
   status.textContent = labels[value];
+  track.hidden = value !== 'playing' && value !== 'paused';
+  status.toggleAttribute('data-transport', !track.hidden);
+  if (entry) {
+    const date = Date.parse(entry.createdAt);
+    const seconds = Math.round(entry.durationSeconds ?? actualDuration);
+    track.querySelector('.theme').textContent = themes[entry.categoryCode] ?? 'テーマ未設定';
+    track.querySelector('.date').textContent = Number.isFinite(date) ? japanDate.format(date) : '日付不明';
+    track.querySelector('.duration').textContent = Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
+  }
+  pause.title = value === 'paused' ? '再開' : '一時停止';
+  pause.setAttribute('aria-label', pause.title);
 }
 
 const player = makePlayer({
   list: async () => pack.entries,
-  load: async entry => context.decodeAudioData(await pack.load(entry)),
+  load: async entry => {
+    await contextTransition;
+    if (context.state === 'suspended') await context.resume();
+    return context.decodeAudioData(await pack.load(entry));
+  },
   start(buffer, finish) {
     if (context.state !== 'running') throw Error('Audio suspended');
     const source = context.createBufferSource();
+    actualDuration = buffer.duration;
     source.buffer = buffer;
     source.connect(context.destination);
     source.onended = () => { source.disconnect(); finish(); };
@@ -79,6 +101,24 @@ const player = makePlayer({
   },
   state,
 });
+
+pause.addEventListener('click', async () => {
+  const current = deck.dataset.state;
+  if (current !== 'paused' && current !== 'playing') return;
+  pause.disabled = true;
+  try {
+    contextTransition = (current === 'paused' ? context.resume() : context.suspend()).catch(() => false);
+    if (await contextTransition === false) return;
+    if (deck.dataset.state === current) state(current === 'paused' ? 'playing' : 'paused');
+  } finally {
+    pause.disabled = false;
+  }
+});
+
+function scanMessage(text) {
+  status.removeAttribute('data-transport');
+  status.textContent = text;
+}
 
 if (!('NDEFReader' in window) || !window.isSecureContext) {
   button.hidden = true;
@@ -95,17 +135,16 @@ button.addEventListener('click', async () => {
     const unlocked = context.resume();
     reader ??= new NDEFReader();
     reader.onreadingerror = () => {
-      if (pack) status.textContent = 'カードを検出しましたが、読み取れません';
+      if (pack) scanMessage('カードを検出しましたが、読み取れません');
     };
     reader.onreading = ({message}) => {
       if (!pack) return;
-      if (!matchesTag(message.records)) {
-        status.textContent = 'カードを読み取りましたが、登録されていません';
+      const marker = readMarker(message.records);
+      if (!marker) {
+        scanMessage('カードを読み取りましたが、登録されていません');
         return;
       }
-      const now = performance.now();
-      if (now - lastTap < 450) return;
-      lastTap = now;
+      if (!acceptMarker(marker)) return;
       void holdScreen();
       void player.tap();
     };
