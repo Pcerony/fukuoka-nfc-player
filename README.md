@@ -1,5 +1,15 @@
 # NFC Player
 
+## Android exhibition app
+
+[Download the latest APK](https://github.com/Pcerony/fukuoka-nfc-player/releases/latest/download/fukuoka-footsteps.apk). Enable NFC in Android settings, open the app, and tap the setup button. First setup needs internet for the 18 recordings. The Android app has its own offline cache; it does not reuse Chrome's cache.
+
+The app keeps NFC in Android foreground reader mode without the browser idle dialog or reload cycle. It reads the same four NDEF text records below. Before an exhibition, test on the target device with a card held in the fixture, wait past the previous failure interval, then rotate to another card while offline.
+
+Build from the repository root with `android/gradlew -p android testReleaseUnitTest assembleRelease` (JDK 17+, Android SDK 36). For updates, increment the Android version code, sign with the same protected release key, and attach the APK as `fukuoka-footsteps.apk` to the latest GitHub Release.
+
+## Browser version
+
 A standalone NFC-triggered player for a public exhibition audio collection.
 
 Open the GitHub Pages site in Android Chrome and enable NFC. The first setup downloads 18 existing public recordings. Wait for the enable button to disappear and the spin prompt to return before disconnecting. Reopen the same site in the same regular Chrome profile and enable NFC again. Clearing site data removes the offline pack. Previously downloaded copies cannot be remotely recalled while offline.

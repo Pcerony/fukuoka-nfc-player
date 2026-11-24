@@ -12,6 +12,8 @@ const reconnect = document.querySelector('.reconnect');
 const idleDialog = document.querySelector('.idle-dialog');
 const activate = document.querySelector('.activate');
 const wakeError = document.querySelector('.wake-error');
+const nativeReader = location.origin === 'https://appassets.androidplatform.net'
+  && location.pathname === '/player/index.html';
 const recoveryKey = 'fukuoka-nfc-recovery:' + location.pathname;
 let recoveryMode;
 try {
@@ -24,7 +26,7 @@ const acceptMarker = makeTagGate();
 const themes = {A: '食べ物', B: '旅行', C: '出会い', D: 'その他の思い出'};
 const japanDate = new Intl.DateTimeFormat('ja-JP', {timeZone: 'Asia/Tokyo'});
 const scope = new URL('./', location.href).href;
-let pack, wakeLock, wakePending, keepAwake = false;
+let pack, wakeLock, wakePending, pendingNativeMarker, keepAwake = false;
 
 async function holdScreen() {
   if (!keepAwake || wakePending || !navigator.wakeLock || document.hidden || (wakeLock && !wakeLock.released)) return;
@@ -40,7 +42,7 @@ async function holdScreen() {
 
 document.addEventListener('visibilitychange', holdScreen);
 
-if (document.fullscreenEnabled) {
+if (!nativeReader && document.fullscreenEnabled) {
   fullscreen.hidden = false;
   document.addEventListener('fullscreenchange', () => {
     const expanded = Boolean(document.fullscreenElement);
@@ -65,11 +67,13 @@ const labels = {
 let context, actualDuration, contextTransition, scanPending, scanSince = 0;
 
 async function setupOffline() {
-  await navigator.serviceWorker.register('./sw.js', {updateViaCache: 'none'});
-  await Promise.race([
-    navigator.serviceWorker.ready,
-    new Promise((_, reject) => setTimeout(() => reject(Error('Offline page not ready')), 15000)),
-  ]);
+  if (!nativeReader) {
+    await navigator.serviceWorker.register('./sw.js', {updateViaCache: 'none'});
+    await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise((_, reject) => setTimeout(() => reject(Error('Offline page not ready')), 15000)),
+    ]);
+  }
   const cache = await caches.open('fukuoka-nfc-audio-v1:' + scope);
   return preparePack(cache, scope, {
     list: () => list(AbortSignal.timeout(20000)),
@@ -154,12 +158,23 @@ const scanner = makeScanner({
       scanMessage('カードを読み取りましたが、登録されていません');
       return;
     }
-    if (!acceptMarker(marker)) return;
-    scanSince = Date.now();
-    void holdScreen();
-    void player.tap();
+    playMarker(marker);
   },
 });
+
+function playMarker(marker) {
+  if (!acceptMarker(marker)) return;
+  scanSince = Date.now();
+  void holdScreen();
+  void player.tap();
+}
+
+if (nativeReader) {
+  window.addEventListener('exhibition-nfc', ({detail}) => {
+    if (pack) playMarker(detail);
+    else pendingNativeMarker = detail;
+  });
+}
 
 async function reconnectScan() {
   if (!pack || document.hidden || scanPending || idleDialog.open) return false;
@@ -216,13 +231,13 @@ idleDialog.addEventListener('cancel', event => event.preventDefault());
 document.addEventListener('pointerdown', () => { lastActivity = Date.now(); });
 reconnect.addEventListener('click', reloadForRecovery);
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) {
+  if (!nativeReader && !document.hidden) {
     checkIdle();
     void reconnectScan();
   }
 });
 
-if (!('NDEFReader' in window) || !window.isSecureContext) {
+if (!nativeReader && (!('NDEFReader' in window) || !window.isSecureContext)) {
   button.hidden = true;
   status.textContent = 'NFCはAndroid版Chromeで使えます';
 } else if (recoveryMode) {
@@ -239,7 +254,7 @@ button.addEventListener('click', async () => {
   try {
     context ??= new AudioContext({latencyHint: 'playback'});
     const unlocked = context.resume();
-    await Promise.all([unlocked, scanner.restart()]);
+    await Promise.all([unlocked, nativeReader ? undefined : scanner.restart()]);
   } catch {
     scanner.stop();
     status.textContent = 'NFCを開始できませんでした';
@@ -255,7 +270,7 @@ button.addEventListener('click', async () => {
     pack = await setupOffline();
     navigator.storage?.persist?.().catch(() => {});
     button.hidden = true;
-    reconnect.hidden = false;
+    reconnect.hidden = nativeReader;
     if (recoveryMode) {
       idleDialog.close();
       recoveryMode = undefined;
@@ -263,11 +278,17 @@ button.addEventListener('click', async () => {
       activate.querySelector('[lang="en"]').textContent = 'Tap the screen to activate';
     }
     scanSince = Date.now();
-    setInterval(checkIdle, 1000);
-    setInterval(() => {
-      if (Date.now() - scanSince >= 60000) void reconnectScan();
-    }, 15000);
+    if (!nativeReader) {
+      setInterval(checkIdle, 1000);
+      setInterval(() => {
+        if (Date.now() - scanSince >= 60000) void reconnectScan();
+      }, 15000);
+    }
     state('ready');
+    if (pendingNativeMarker) {
+      playMarker(pendingNativeMarker);
+      pendingNativeMarker = undefined;
+    }
   } catch {
     scanner.stop();
     status.textContent = '準備できませんでした。接続を確認して再試行してください。';
